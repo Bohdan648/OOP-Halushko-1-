@@ -12,3 +12,4 @@ C:\Users\Student\OOP-Halushko\lab2v5\obj\Debug\net9.0\refint\lab2v5.dll
 C:\Users\Student\OOP-Halushko\lab2v5\obj\Debug\net9.0\lab2v5.pdb
 C:\Users\Student\OOP-Halushko\lab2v5\obj\Debug\net9.0\lab2v5.genruntimeconfig.cache
 C:\Users\Student\OOP-Halushko\lab2v5\obj\Debug\net9.0\ref\lab2v5.dll
+C:\Users\Student\OOP-Halushko\lab2v5\obj\Debug\net9.0\lab2v5.sourcelink.json
