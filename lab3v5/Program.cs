@@ -1,103 +1,83 @@
 ﻿using System;
 
-namespace ResourceManagementLab
+public class GraphicsContext : IDisposable
 {
-    public class GraphicsContext : IDisposable
+    private int _contextId;
+    private bool _isContextCreated;
+    private bool _disposed;
+
+    public GraphicsContext(int contextId)
     {
-        private int _contextId;
-        private bool _isContextCreated;
-        private bool _disposed = false;
+        _contextId = contextId;
+        _isContextCreated = true;
+        Console.WriteLine($"Конструктор: контекст {_contextId} створено.");
+    }
 
-        public int ContextId => _contextId;
-        public bool IsContextCreated => _isContextCreated;
+    public void DrawShape(string shape)
+    {
+        if (_disposed)
+            throw new ObjectDisposedException(nameof(GraphicsContext), "Контекст знищено.");
 
-        public GraphicsContext(int contextId)
+        if (_isContextCreated)
+            Console.WriteLine($"Малювання: {shape} (ID: {_contextId}).");
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
         {
-            _contextId = contextId;
-            _isContextCreated = true;
-            Console.WriteLine($"[Конструктор]: Графічний контекст (ID: {_contextId}) успішно створено.");
-        }
-
-        public void DrawShape(string shape)
-        {
-            if (_disposed)
-                throw new ObjectDisposedException(nameof(GraphicsContext), "Неможливо намалювати: графічний контекст знищено.");
+            if (disposing)
+                Console.WriteLine($"Dispose(true): керовані ресурси (ID: {_contextId}).");
 
             if (_isContextCreated)
             {
-                Console.WriteLine($"[Малювання]: Фігура '{shape}' намальована в контексті (ID: {_contextId}).");
+                Console.WriteLine($"Dispose: контекст {_contextId} знищено.");
+                _isContextCreated = false;
             }
-        }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    Console.WriteLine($"[Dispose(true)]: Звільнення керованих ресурсів контексту ID: {_contextId}.");
-                }
-
-                if (_isContextCreated)
-                {
-                    Console.WriteLine($"[Dispose]: Графічний контекст (ID: {_contextId}) знищено.");
-                    _isContextCreated = false;
-                }
-
-                _disposed = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        ~GraphicsContext()
-        {
-            Console.WriteLine($"[Деструктор]: Викликано деструктор для контексту ID: {_contextId}.");
-            Dispose(false);
+            _disposed = true;
         }
     }
 
-    class Program
+    public void Dispose()
     {
-        static void Main(string[] args)
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~GraphicsContext()
+    {
+        Console.WriteLine($"Деструктор: контекст {_contextId}.");
+        Dispose(false);
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+        Console.WriteLine("\n--- Сценарій 1: using ---");
+        using (var c1 = new GraphicsContext(101))
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-
-            Console.WriteLine("==================================================");
-            Console.WriteLine("СЦЕНАРІЙ 1: Використання оператора 'using'");
-            Console.WriteLine("==================================================");
-            using (var context1 = new GraphicsContext(101))
-            {
-                context1.DrawShape("Коло");
-            }
-
-            Console.WriteLine("\n==================================================");
-            Console.WriteLine("СЦЕНАРІЙ 2: Явний виклик Dispose()");
-            Console.WriteLine("==================================================");
-            var context2 = new GraphicsContext(202);
-            context2.DrawShape("Квадрат");
-            context2.Dispose();
-
-            Console.WriteLine("\n==================================================");
-            Console.WriteLine("СЦЕНАРІЙ 3: Демонстрація роботи деструктора через GC.Collect()");
-            Console.WriteLine("==================================================");
-            CreateAndAbandonContext();
-
-            Console.WriteLine("Викликаємо GC.Collect()...");
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-
-            Console.WriteLine("\nЗавершення роботи програми.");
+            c1.DrawShape("Коло");
         }
 
-        static void CreateAndAbandonContext()
-        {
-            var context3 = new GraphicsContext(303);
-            context3.DrawShape("Трикутник");
-        }
+        Console.WriteLine("\n--- Сценарій 2: Явний Dispose ---");
+        var c2 = new GraphicsContext(202);
+        c2.DrawShape("Квадрат");
+        c2.Dispose();
+
+        Console.WriteLine("\n--- Сценарій 3: Деструктор + GC ---");
+        CreateAndAbandon();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+    }
+
+    static void CreateAndAbandon()
+    {
+        var c3 = new GraphicsContext(303);
+        c3.DrawShape("Трикутник");
     }
 }
